@@ -3,7 +3,7 @@ import dotenv, os, pprint, requests, urllib, json
 dotenv.load_dotenv()
 
 cache_path = '.cache/game_lookup.json'
-output_path = 'output.json'
+output_path = 'output/'
 
 key = os.getenv('STEAM_API_KEY')
 player_id = os.getenv('PLAYER_ID')
@@ -81,5 +81,7 @@ for gameid in main_dic.keys():
 
 # --------------------------------------------------------------------------------------------------------------------
 
-with open(output_path, 'w') as outfile:
-        json.dump(main_dic, outfile)
+if not os.path.exists(output_path):
+    os.mkdir(output_path)
+with open(output_path + player_id + '.json', 'w') as outfile:
+    json.dump(main_dic, outfile)
