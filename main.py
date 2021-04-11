@@ -56,6 +56,21 @@ for gameid in main_dic.keys():
     dic = response.json()
 
     # ---------------------------------------
+    response = make_call('ISteamUserStats', 'GetPlayerAchievements', 'v1', {'key' : key, 'appid' : gameid, 'steamid' : player_id})
+    player_achevement_dic = response.json()
+
+    player_achevements = player_achevement_dic['playerstats'].get('achievements')
+    player_achevement_success = player_achevement_dic['playerstats'].get('success')
+    player_achevements_lookup = {}
+    if player_achevement_success and player_achevements != None:
+        for ach in player_achevements:
+            player_achevements_lookup.update({ach['apiname'] : True if ach['achieved'] else False})
+    else:
+
+        print(player_achevement_dic['playerstats'].get('error') if player_achevement_dic['playerstats'].get('error') else 'Requested app has no achevements')
+    # ---------------------------------------
+
+    # ---------------------------------------
     response = make_call('ISteamUserStats', 'GetSchemaForGame', 'v1', {'key' : key, 'appid' : gameid})
     game_dic = response.json()
 
@@ -67,15 +82,30 @@ for gameid in main_dic.keys():
             achievements = game_stats.get('achievements')
             if achievements != None:
                 for k,v in achievements.items():
-                    internal_aid_to_text_aid.update({k: v['displayName']})
+                    if v.get('description') != None:
+                        description = v.get('description')
+                    else:
+                        description = None
+                    dic_to_add = {
+                        'displayName' : v['displayName'],
+                        'description' : description
+                    }
+                    internal_aid_to_text_aid.update({k: dic_to_add})
 
     # ---------------------------------------
 
     aid_to_per = {}
     achievement_percentage = dic.get('achievementpercentages')
-    if achievement_percentage != None:
+    if achievement_percentage != None or player_achevements != None:
         for i in dic['achievementpercentages']['achievements']:
-            aid_to_per.update({internal_aid_to_text_aid[i['name']]: i['percent']})
+            ach_dets = internal_aid_to_text_aid[i['name']]
+            dic_to_add = {
+                'name' : ach_dets['displayName'],
+                'discription' : ach_dets['description'],
+                'percent' : i['percent'],
+                'has' : player_achevements_lookup[i['name']] if player_achevement_success else  None
+            }
+            aid_to_per.update({i['name']: dic_to_add})
 
         main_dic[gameid]['achievements'] = aid_to_per
 

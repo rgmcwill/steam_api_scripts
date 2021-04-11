@@ -3,7 +3,7 @@ import dotenv, os, pprint, requests, urllib, json
 dotenv.load_dotenv()
 
 
-cache_path = '.cache/game_lookup.json'
+cache_path = '../.cache/game_lookup.json'
 
 key = os.getenv('STEAM_API_KEY')
 base_url = 'http://api.steampowered.com/'
